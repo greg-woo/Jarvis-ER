@@ -121,9 +121,17 @@ function UpdatePercentage() {
 
 // ER BELOW
 var maladie = "Broken Arm";
+var waitime = "2h35";
+var placeInQueue = "10";
 
 
-var wantsAdvice = false
+var listingSymptoms = false
+var updateDisease = false
+var updatingDisease = false
+var updatePain = false
+var updatingPain = false
+var updateCovidSymptoms = false
+var updatingSymptoms = false
 //
 //
 //****************************************************************
@@ -136,66 +144,107 @@ var wantsAdvice = false
 //edit this function to change what the chatbot says
 function chatbotResponse() {
   var text = lastUserMessage
-  if (userWantsHelp && text.toLowerCase().includes("development") || text.toLowerCase().includes("developing") || text.toLowerCase().includes("revenue") || text.toLowerCase().includes("index") || text.toLowerCase().includes("growth")) {
-    const department = "Development"
-    const rec = getRecommendation(department)
-    messageHelp = "Hi " + rec[0].name + "! \nI have a " + department + " issue. Could I ask you for some help?"
-    askedForHelp = true
-    botMessage = "Based on people's availabilities right now and their expertise, I recommend that you ask: " + rec[0].name + "."
-  }
-  else if (text.toLowerCase().includes("update")) {
-    var text = text.split("I have a")[1];
-    console.log("HERERE:" + text);
-    document.getElementById("maladie").innerHTML = text;
-    
-  }
-  else if (userWantsHelp && (text.toLowerCase().includes("it") || text.toLowerCase().includes("technical") || text.toLowerCase().includes("tech support") || text.toLowerCase().includes("troubleshooting") || text.toLowerCase().includes("software"))) {
-    const department = "IT"
-    const rec = getRecommendation(department)
-    messageHelp = "Hi " + rec[0].name + "! \nI have an " + department + " issue. Could I ask you for some help?"
-    askedForHelp = true
-    botMessage = "Based on people's availabilities right now and their expertise, I recommend that you ask: " + rec[0].name + "."
-  }
-  else if (userWantsHelp && text.toLowerCase().includes("analysis") || text.toLowerCase().includes("key consumer")) {
-    const department = "Analysis"
-    const rec = getRecommendation(department)
-    messageHelp = "Hi " + rec[0].name + "! \nI have an " + department + " issue. Could I ask you for some help?"
-    askedForHelp = true
-    botMessage = "Based on people's availabilities right now and their expertise, I recommend that you ask: " + rec[0].name + "."
-  }
-  else if (userWantsHelp && text.toLowerCase().includes("data analytics") || text.toLowerCase().includes("trends") || text.toLowerCase().includes("pattern recognition")) {
-    const department = "Data Analytics"
-    const rec = getRecommendation(department)
-    messageHelp = "Hi " + rec[0].name + "! \nI have a " + department + " issue. Could I ask you for some help?"
-    askedForHelp = true
-    botMessage = "Based on people's availabilities right now and their expertise, I recommend that you ask: " + rec[0].name + "."
-  }
-  else if (text.toLowerCase().includes("good morning") || text.toLowerCase().includes("morning") || text.toLowerCase().includes("hi") || text.toLowerCase().includes("hello")) {
-    botMessage = "Hello! Your tasks for the day are on the right in the order that I recommend."
-  }
-  else if (text.toLowerCase().includes("task") && (text.toLowerCase().includes("new") || text.toLowerCase().includes("add") || text.toLowerCase().includes("create")))
+  if (text.toLowerCase().includes("add") || text.toLowerCase().includes("create") || text.toLowerCase().includes("new") || text.toLowerCase().includes("schedule"))
   {
-    text = text.split("task ")[1]
-    addTask(text);
-    numberTasksLeft += 1;
-    document.getElementById("tasksLeft").innerHTML = numberTasksLeft;
-    botMessage = "Great! New task added!"
+    if (text.toLowerCase().includes("emergency") || text.toLowerCase().includes("appointment") || text.toLowerCase().includes("visit"))
+    {
+      botMessage = "Please let me know what your emergency is and I'll be happy to put you in the queue."
+      userWantsHelp = true
+    }
   }
-  else if (text.toLowerCase().includes("task") && (text.toLowerCase().includes("remove") || text.toLowerCase().includes("completed") || text.toLowerCase().includes("finished") || text.toLowerCase().includes("delete")))
+  else if (userWantsHelp)
   {
-    botMessage = "Congratulations! One task less!"
-    $(document.getElementById("task1button")).click()
+    userWantsHelp = false
+    botMessage = "I'll schedule you in for " + text.toLowerCase() + ". However, I'm going to need you to tell me about your symptoms. On a scale of 1 to 10 (10 being worst), how bad is your current pain?"
+    maladie = text.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+    listingSymptoms = true
+    if (text.toLowerCase().includes("heart") || text.toLowerCase().includes("crisis") || text.toLowerCase().includes("breathing"))
+    {
+      waitime = "0h25"
+      placeInQueue = "2"
+    }
   }
-  else if (text.toLowerCase().includes("break")) {
-    botMessage = "You've earned it! I'll leave you alone for 15 minutes and then check back in!"
-    changeStatus();
-  } else if (text.toLowerCase().includes("help")) {
-    userWantsHelp = true
-    botMessage = "Ask me your question and I'll point you in the right direction."
+  else if (listingSymptoms)
+  {
+    if (text.includes("0") || text.includes("1") || text.includes("2") || text.includes("3") || text.includes("4") || text.includes("5") || text.includes("6") || text.includes("7") || text.includes("8") || text.includes("9") || text.includes("10"))
+    {
+      botMessage = "Thank you. In the past 14 days, have you been tested positive for Covid-19, travelled outside the country, or had symptoms of Covid-19 (nausea, stomach pain, difficulty breathing, cough)?"
+    }
+    else 
+    {
+      botMessage = "Thank you. I have updated your information and your place in the queue according to your provided details."
+      document.getElementById("maladie").innerHTML = maladie
+      document.getElementById("timeLeft").innerHTML = waitime
+      document.getElementById("tasksLeft").innerHTML = placeInQueue
+      listingSymptoms = false
+    }
+  }
+  else if (text.includes("hello") || text.includes("hi") || text.includes("howdy") || text.includes("morning") || text.includes("greetings"))
+  {
+    botMessage = "Hi there! How can I help you?"
   }
   else if (text.toLowerCase().includes("commands"))
   {
-    botMessage = "Based on what you ask me, I can create new tasks, mark them as completed, recommend someone to ask for help if you are stuck, and so much more..."
+    botMessage = "Based on what you say in our conversation, I would be happy to book a new appointment for you, schedule you in for an emergency, update your personal information, or help you in a variety of other ways."
+  }
+  else if ((text.toLowerCase().includes("update") || text.toLowerCase().includes("change")) && (text.toLowerCase().includes("emergency") || text.toLowerCase().includes("appointment")))
+  {
+    botMessage = "Is your issue still: " + maladie + "?"
+    updateDisease = true
+  }
+  else if (updateDisease)
+  {
+    if (text.toLowerCase().includes("no"))
+    {
+      botMessage = "What is your new emergency?"
+      updateDisease = false
+      updatingDisease = true
+    }
+    else
+    {
+      botMessage = "Has your pain level changed?"
+      updateDisease = false
+      updatePain = true
+    }
+  }
+  else if (updatingDisease)
+  {
+    botMessage = "Thank you for updating your emergency. I have changed your information"
+    maladie = text.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+    document.getElementById("maladie").innerHTML = maladie
+    waitime = "2h05"
+    document.getElementById("timeLeft").innerHTML = waitime
+    placeInQueue = "11"
+    document.getElementById("tasksLeft").innerHTML = placeInQueue
+    updatingDisease = false
+  }
+  else if (updatePain)
+  {
+    if (text.toLowerCase().includes("yes"))
+    {
+      botMessage = "On a scale of 1 to 10 (10 being the worst), how bad is your current pain?"
+      updatePain = false
+      updatingPain = true
+    }
+    else
+    {
+      botMessage = "In the past 14 days, have you been tested positive for Covid-19, travelled outside the country, or had symptoms of Covid-19 (nausea, stomach pain, difficulty breathing, cough)?"
+      updatePain = false
+      updateCovidSymptoms = true
+    }
+  }
+  else if (updatingPain)
+  {
+    updatingPain = false
+    waitime = "1h30"
+    document.getElementById("timeLeft").innerHTML = waitime
+    placeInQueue = "4"
+    document.getElementById("tasksLeft").innerHTML = placeInQueue
+  }
+  else if (updateCovidSymptoms)
+  {
+    botMessage = "Thank you for letting us know. I have updated your information"
+    updateCovidSymptoms = false
   }
   else botMessage = "I'm sorry but I'm not sure what that means. \nIs there something else I can help you with?"
 }
@@ -260,7 +309,7 @@ function newEntry() {
     //add the chatbot's name and message to the array messages
     messages.push("<b>" + botName + ":</b> " + botMessage);
     // says the message using the text to speech function written below
-    Speech(botMessage);
+    //Speech(botMessage);
     //outputs the last few array elements of messages to html
     for (var i = 1; i < 8; i++) {
       if (messages[messages.length - i])
